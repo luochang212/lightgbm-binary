@@ -23,6 +23,19 @@ def read_csv(file_path, sep=',', header=0, on_bad_lines='warn', encoding='utf-8'
                     encoding=encoding)
 
 
+# 统计各字段枚举值的数量
+def value_counts(df):
+    val_cnt_list = []
+    for col in df.columns:
+        val_cnt_list.append(len(df[col].value_counts()))
+
+    # 初始化 DataFrame 以存储统计结果
+    return pd.DataFrame({
+        'col_name': df.columns,
+        'val_cnt': val_cnt_list
+    })
+
+
 # 将类别特征 (String) 编码成整数 (int)
 def label_encoder(df):
     cat_feats = [col for col in df.columns if df[col].dtypes == np.dtype('object')]
@@ -64,6 +77,7 @@ def eval_continuous(y_true, y_pred):
 def gen_threshold(y_true, y_pred, n_trials):
 
     # 临时将报警等级设为 ERROR
+    verbose = optuna.logging.get_verbosity()
     optuna.logging.set_verbosity(optuna.logging.ERROR)
 
     def f1_objective(trial):
@@ -76,21 +90,24 @@ def gen_threshold(y_true, y_pred, n_trials):
     f1_study.optimize(f1_objective, n_trials=n_trials)
     best_params = f1_study.best_params
     
-    # 恢复报警等级
-    optuna.logging.set_verbosity(optuna.logging.INFO)
+    # 恢复原先的报警等级
+    optuna.logging.set_verbosity(verbose)
 
     return best_params['threshold']
 
 
 # 用 y_pred 评估二分类任务
-def eval_binary(y_true, y_pred, n_trials=200, ret=False):
+def eval_binary(y_true, y_pred, n_trials=200, ret=False, threshold=None):
     
     # 直接用 y_pred 可以计算的指标
     auc = sklearn.metrics.roc_auc_score(y_true=y_true, y_score=y_pred)
     log_loss = sklearn.metrics.log_loss(y_true=y_true, y_pred=y_pred)
+    
+    # 如果阈值不存在，获取阈值
+    if threshold is None:
+        threshold = gen_threshold(y_true, y_pred, n_trials)
 
     # 必须用 y_label 计算的指标
-    threshold = gen_threshold(y_true, y_pred, n_trials)
     y_label = [1 if e > threshold else 0 for e in y_pred]
 
     acc = sklearn.metrics.accuracy_score(y_true=y_true, y_pred=y_label)
