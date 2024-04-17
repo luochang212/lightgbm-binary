@@ -1,4 +1,4 @@
-# lightgbm-tutorial
+# lightgbm-binary
 
 基于 LightGBM 训练二分类模型。使用的数据集是 [adult](https://archive.ics.uci.edu/dataset/2/adult)
 
