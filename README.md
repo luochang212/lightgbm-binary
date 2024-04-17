@@ -4,13 +4,13 @@
 
 🚀 本仓库的亮点：
 
-- 使用 Optuna 对超参数寻优
-- 使用 Treelite 做推理加速
-- 使用 Graphviz 做决策树模型可视化
-- 使用 `scale_pos_weight` 参数，解决样本不均衡问题
-- 使用自编写的 **自适应学习率衰减技术** 提高 AUC，详见 `util.AdaptiveLearningRate`
-- 对由标签概率生成标签的阈值寻优 (y_pred -> y)，详见 `util.gen_threshold`
-- 一站式评估函数，可一次性输出多种指标，包括 accuracy, precision, recall, f1_score, auc, cross-entropy loss, confusion matrix，详见 `util.eval_binary`
+- [x] 使用 Optuna 做超参数寻优
+- [x] 使用 Treelite 做推理加速
+- [x] 使用 Graphviz 做决策树模型可视化
+- [x] 使用 `scale_pos_weight` 参数，解决样本不均衡问题
+- [x] 使用自编写的 **自适应学习率衰减技术** 提高 AUC，详见 `util.AdaptiveLearningRate`
+- [x] 对由标签概率生成标签的阈值寻优 (`y_pred -> y`)，详见 `util.gen_threshold`
+- [x] 一站式评估函数，可一次性输出多种指标，包括 accuracy, precision, recall, f1_score, auc, cross-entropy loss, confusion matrix，详见 `util.eval_binary`
 
 ✨ 感谢 [Kimi](https://kimi.moonshot.cn/) 在学习过程中提供的无私帮助～
 
