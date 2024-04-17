@@ -1,0 +1,4 @@
+lightgbm==4.3.0
+optuna==3.6.1
+treelite==4.1.2
+tl2cgen==1.0.0

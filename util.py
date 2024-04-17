@@ -61,6 +61,38 @@ def feature_importance(gbm):
         print(f'[rank {i+1}] {k}: {v}')
 
 
+# 自适应学习率衰减
+class AdaptiveLearningRate:
+    def __init__(self, learning_rate=0.3, decay_rate=0.9, patience=10):
+        self.learning_rate = learning_rate
+        self.decay_rate = decay_rate
+        self.patience = patience
+        self.best_score = float('inf')
+        self.wait_count = 0
+
+    def callback(self, env):
+        # 检查当前模型的性能
+        score = env.evaluation_result_list[0][2]  # 假设使用 auc
+
+        # auc 向 maximize 方向搜索
+        if score > self.best_score:
+            self.best_score = score
+            self.wait_count = 0  # 重置等待次数
+        else:
+            self.wait_count += 1  # 增加等待次数
+
+        # 如果连续 patience 次迭代性能没有提升，则衰减学习率
+        if self.wait_count >= self.patience:
+            pre = self.learning_rate
+            self.learning_rate *= self.decay_rate
+            if env.params.get('verbose', 0) >= 0:
+                print(f"Learning rate ==> {self.learning_rate:.3f} (-{pre - self.learning_rate:.4f})")
+            self.wait_count = 0  # 重置等待次数
+
+        # 更新学习率
+        env.model.params['learning_rate'] = self.learning_rate
+
+
 # 用 y_pred 评估线性回归任务
 def eval_continuous(y_true, y_pred):
     # evaluate
