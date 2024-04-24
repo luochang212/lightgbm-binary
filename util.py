@@ -143,6 +143,8 @@ def gen_threshold_cdf(y_pred, rate, interval=100):
             xa = (px + x) / 2
             break
         px = x
+        
+    return xa
 
 
 # 用 y_pred 评估二分类任务
