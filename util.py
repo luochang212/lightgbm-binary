@@ -1,6 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
+import scipy.stats
 import sklearn.metrics
 import sklearn.preprocessing
 import matplotlib.pyplot as plt
@@ -15,12 +16,13 @@ def gen_abspath(directory_path, relative_path):
 
 
 # 读 CSV 的函数，添加了自己的默认参数
-def read_csv(file_path, sep=',', header=0, on_bad_lines='warn', encoding='utf-8'):
+def read_csv(file_path, sep=',', header=0, on_bad_lines='warn', encoding='utf-8', dtype=None):
     return pd.read_csv(file_path,
                     header=header,
                     sep=sep,
                     on_bad_lines=on_bad_lines,
-                    encoding=encoding)
+                    encoding=encoding,
+                    dtype=dtype)
 
 
 # 统计各字段枚举值的数量
@@ -126,6 +128,21 @@ def gen_threshold(y_true, y_pred, n_trials):
     optuna.logging.set_verbosity(verbose)
 
     return best_params['threshold']
+
+
+# 以输出结果中负样本的比例为目标，寻找最优 threshold，参数 rate 为负样本 (label 0) 的比例
+def gen_threshold_cdf(y_pred, rate, interval=100):
+    xx = np.linspace(min(y_pred), max(y_pred), interval)
+    kde = scipy.stats.gaussian_kde(y_pred)
+    pdf = kde.evaluate(xx)
+    cdf = np.cumsum(pdf) * (xx[1] - xx[0])
+
+    px = 0
+    for x, y in zip(xx, cdf):
+        if y > rate:
+            xa = (px + x) / 2
+            break
+        px = x
 
 
 # 用 y_pred 评估二分类任务
