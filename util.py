@@ -6,7 +6,7 @@ import sklearn.metrics
 import sklearn.preprocessing
 import matplotlib.pyplot as plt
 import seaborn as sns
-import swifter
+from swifter import swifter
 import optuna
 import json
 
