@@ -6,7 +6,9 @@ import sklearn.metrics
 import sklearn.preprocessing
 import matplotlib.pyplot as plt
 import seaborn as sns
+import swifter
 import optuna
+import json
 
 
 # 将 数据目录 和 数据相对地址 合成 数据绝对地址
@@ -44,6 +46,37 @@ def label_encoder(df):
     for col in cat_feats:
         df[col] = sklearn.preprocessing.LabelEncoder().fit_transform(df[col])
     return df
+
+
+# 改进的 label_encoder：去除特征值前后空格，返回 特征与标签映射 和 类别特征名
+def label_encoder_trim(df):
+    kkv_dict = dict()
+    cat_feats = [col for col in df.columns if df[col].dtypes == np.dtype('object')]
+    for col in cat_feats:
+        df[col] = df[col].swifter.apply(lambda e: e.strip())
+
+        le = sklearn.preprocessing.LabelEncoder()
+        df[col] = le.fit_transform(df[col])
+        kkv_dict[col] = {label: index for index, label in enumerate(le.classes_)}
+    return df, kkv_dict, cat_feats
+
+
+# 将 label_encoder 编码保存成 json 文件
+def save_label_encoder(kkv, file_path):
+    content = json.dumps(kkv, indent=4)
+    with open(file_path, 'w') as f:
+        f.write(content)
+
+
+# 加载 kkv 文件，并用 kkv 对新数据做编码
+def load_label_encoder(df, kkv_file_path):
+    with open(kkv_file_path, 'r') as f:
+        kkv = json.load(f)
+
+    for k, kv in kkv.items():
+        df[k] = df[k].swifter.apply(lambda e: kv.get(e.strip(), -1))  
+
+    return df, kkv
 
 
 # 解决样本数据倾斜
